@@ -6,3 +6,5 @@ Games" by Pai et al.
 TODOs for this README:
 
 - Write documentation
+- Write requirements
+- Write how to run experiments
