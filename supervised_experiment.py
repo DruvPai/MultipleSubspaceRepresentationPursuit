@@ -47,14 +47,3 @@ def ctrl_msp_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: ty
                                        outlier_pct, outlier_mag, label_corruption_pct)
     model = CTRLMSP(d_x, d_z, eps_sq, lr_f, lr_g, inner_opt_steps)
     supervised_experiment(model, data, epochs)
-
-def supervisedLDR_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: typing.List[int], nu: float = 0.1,
-                        sigma_sq: float = 0.0, eps_sq: float = 1.0,
-                        lr_f: float = 1e-2, lr_g: float = 1e-3, inner_opt_steps: int = 1000,
-                        outlier_pct: float = 0.0, outlier_mag: float = 0.0, label_corruption_pct: float = 0.0,
-                        batch_size: int = 50, epochs: int = 2):
-    pl.utilities.seed.reset_seed()
-    data = MultipleSubspacesDataModule(n, k, d_x, d_S, nu, sigma_sq, batch_size,
-                                       outlier_pct, outlier_mag, label_corruption_pct)
-    model = SupervisedLinearSampleNormConstrainedLDR(d_x, d_z, k, eps_sq, lr_f, lr_g, inner_opt_steps)
-    supervised_experiment(model, data, epochs)
