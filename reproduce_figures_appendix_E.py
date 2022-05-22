@@ -171,3 +171,17 @@ def reproduce_fig_25():
             n=[500, 500, 500], k=3, d_x=50, d_z=40, d_S=[3, 4, 5],
             nu=0.1, sigma_sq=sigma_sq, d_latent=100, n_layers=10, epochs=1000
         )
+
+
+reproduce_fig_14()
+reproduce_fig_15()
+reproduce_fig_16()
+reproduce_fig_17()
+reproduce_fig_18()
+reproduce_fig_19()
+reproduce_fig_20()
+reproduce_fig_21()
+reproduce_fig_22()
+reproduce_fig_23()
+reproduce_fig_24()
+reproduce_fig_25()
