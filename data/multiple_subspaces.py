@@ -1,4 +1,3 @@
-import pathlib
 import typing
 
 import pytorch_lightning as pl
@@ -11,9 +10,9 @@ def _remove_spaces(x):
 
 
 class MultipleSubspacesDataModule(pl.LightningDataModule):
-    def __init__(self, n: typing.List[int], k: int, d_x: int, d_S: typing.List[int], nu: float, sigma_sq: float = 0.0,
-                 batch_size: int = 50, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
-                 label_corruption_pct: float = 0.0):
+    def __init__(self, n: typing.List[int], k: int, d_x: int, d_S: typing.List[int], nu: float,
+                 sigma_sq: float = 0.0, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
+                 label_corruption_pct: float = 0.0, batch_size: int = 50):
 
         super(MultipleSubspacesDataModule, self).__init__()
 
@@ -34,9 +33,7 @@ class MultipleSubspacesDataModule(pl.LightningDataModule):
         self.outlier_mag: float = outlier_mag
         self.label_corruption_pct: float = label_corruption_pct
 
-        self.name: pathlib.Path = pathlib.Path(
-            f"multisub_n{_remove_spaces(n)}_k{k}_dx{d_x}_dS{_remove_spaces(d_S)}_nu{nu}_ss{sigma_sq}_bs{batch_size}_op{outlier_pct}_om{outlier_mag}_lcp{label_corruption_pct}"
-        )
+        self.name: str = f"multisub_n{_remove_spaces(n)}_k{k}_dx{d_x}_dS{_remove_spaces(d_S)}_nu{nu}_ss{sigma_sq}_op{outlier_pct}_om{outlier_mag}_lcp{label_corruption_pct}_bs{batch_size}"
 
     def setup(self, stage=None):
         self.X_train = torch.zeros(size=(self.n_tot, self.d_x))

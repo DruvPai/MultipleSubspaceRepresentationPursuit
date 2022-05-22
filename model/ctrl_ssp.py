@@ -1,10 +1,9 @@
-import pathlib
 import typing
 
 import mcr2
 import pytorch_lightning as pl
 
-from model.operators.linear import *
+from model.operators import *
 
 
 class UnsupervisedCTRLSG(pl.LightningModule):
@@ -93,4 +92,4 @@ class CTRLSSP(UnsupervisedCTRLSG):
         self.training_R = self.training_E
         self.training_DeltaR = self.training_C
 
-        self.name = pathlib.Path(f"CTRLSSP_dx{d_x}_dz{d_z}_es{eps_sq}_lrf{lr_f}_lrg{lr_g}_in{inner_opt_steps}")
+        self.name = f"CTRLSSP_dx{d_x}_dz{d_z}_es{eps_sq}_lrf{lr_f}_lrg{lr_g}_in{inner_opt_steps}"

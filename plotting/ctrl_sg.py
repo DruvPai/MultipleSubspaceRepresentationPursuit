@@ -1,6 +1,5 @@
 import pathlib
 
-import torch
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 

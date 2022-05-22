@@ -81,6 +81,18 @@ def plot_spectra_fX(fX: torch.Tensor, results_folder: pathlib.Path):
     plot_spectra_generic(Z=fX, title="$\\sigma_{p}(f_{\star}(X))$", file=results_folder / "fX_spectra.jpg")
 
 
+def plot_spectra_gfX(gfX: torch.Tensor, results_folder: pathlib.Path):
+    results_folder.mkdir(parents=True, exist_ok=True)
+    plot_spectra_generic(Z=gfX, title="$\\sigma_{p}((g_{\star} \circ f_{\star})(X))$",
+                         file=results_folder / "gfX_spectra.jpg")
+
+
+def plot_spectra_fgfX(fgfX: torch.Tensor, results_folder: pathlib.Path):
+    results_folder.mkdir(parents=True, exist_ok=True)
+    plot_spectra_generic(Z=fgfX, title="$\\sigma_{p}((f_{\star} \circ g_{\star} \circ f_{\star})(X))$",
+                         file=results_folder / "fgfX_spectra.jpg")
+
+
 def plot_class_spectra_generic(Z: torch.Tensor, y: torch.Tensor, k: int,
                                title: str, smalltitles: typing.List[str], file: pathlib.Path):
     plt.rcParams['figure.figsize'] = 8, 8
@@ -114,6 +126,24 @@ def plot_class_spectra_fX(fX: torch.Tensor, y: torch.Tensor, k: int, results_fol
                                )
 
 
+def plot_class_spectra_gfX(gfX: torch.Tensor, y: torch.Tensor, k: int, results_folder: pathlib.Path):
+    results_folder.mkdir(parents=True, exist_ok=True)
+    plot_class_spectra_generic(Z=gfX, y=y, k=k,
+                               title="$\\sigma_{p}((g_{\star} \circ f_{\star})(X_{j}))$",
+                               smalltitles=[f"$j={j + 1}$" for j in range(k)],
+                               file=results_folder / "gfX_class_spectra.jpg"
+                               )
+
+
+def plot_class_spectra_fgfX(fgfX: torch.Tensor, y: torch.Tensor, k: int, results_folder: pathlib.Path):
+    results_folder.mkdir(parents=True, exist_ok=True)
+    plot_class_spectra_generic(Z=fgfX, y=y, k=k,
+                               title="$\\sigma_{p}((f_{\star} \circ g_{\star} \circ f_{\star})(X_{j}))$",
+                               smalltitles=[f"$j={j + 1}$" for j in range(k)],
+                               file=results_folder / "fgfX_class_spectra.jpg"
+                               )
+
+
 def plot_class_proj_residual_generic(Z1: torch.Tensor, Z2: torch.Tensor, y: torch.Tensor, k: int, title: str,
                                      smalltitles: typing.List[str], file: pathlib.Path):
     plt.rcParams['figure.figsize'] = 8, 8
@@ -131,6 +161,16 @@ def plot_class_proj_residual_generic(Z1: torch.Tensor, Z2: torch.Tensor, y: torc
     plt.tight_layout()
     plt.savefig(file)
     plt.close()
+
+
+def plot_class_proj_residual_X_gfX(X: torch.Tensor, gfX: torch.Tensor, y: torch.Tensor, k: int,
+                                   results_folder: pathlib.Path):
+    results_folder.mkdir(parents=True, exist_ok=True)
+    plot_class_proj_residual_generic(Z1=X, Z2=gfX, y=y, k=k,
+                                     title="$\mathrm{Resid}(X_{j}, \mathrm{Col}((g_{\star} \circ f_{\star})(X_{j})))$",
+                                     smalltitles=[f"$j = {j + 1}$" for j in range(k)],
+                                     file=results_folder / "X_gfX_class_proj.jpg"
+                                     )
 
 
 def plot_class_proj_residual_fX_fgfX(fX: torch.Tensor, fgfX: torch.Tensor, y: torch.Tensor, k: int,

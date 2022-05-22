@@ -1,13 +1,11 @@
-import pathlib
-
 import pytorch_lightning as pl
 
 from data.alterations import *
 
 
 class SingleSubspaceDataModule(pl.LightningDataModule):
-    def __init__(self, n: int, d_x: int, d_S: int, sigma_sq: float = 0.0, batch_size: int = 50,
-                 outlier_pct: float = 0.0, outlier_mag: float = 0.0):
+    def __init__(self, n: int, d_x: int, d_S: int, sigma_sq: float = 0.0, outlier_pct: float = 0.0,
+                 outlier_mag: float = 0.0, batch_size: int = 50):
         super(SingleSubspaceDataModule, self).__init__()
 
         self.d_x: int = d_x
@@ -20,9 +18,7 @@ class SingleSubspaceDataModule(pl.LightningDataModule):
         self.outlier_pct: float = outlier_pct
         self.outlier_mag: float = outlier_mag
 
-        self.name: pathlib.Path = pathlib.Path(
-            f"singlesub_n{n}_dx{d_x}_dS{d_S}_ss{sigma_sq}_bs{batch_size}_op{outlier_pct}_om{outlier_mag}"
-        )
+        self.name: str = f"singlesub_n{n}_dx{d_x}_dS{d_S}_ss{sigma_sq}_op{outlier_pct}_om{outlier_mag}_bs{batch_size}"
 
     def setup(self, stage=None):
         self.X_train: torch.Tensor = torch.zeros(size=(self.n, self.d_x))

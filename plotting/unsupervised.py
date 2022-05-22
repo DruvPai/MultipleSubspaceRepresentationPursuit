@@ -48,3 +48,10 @@ def plot_proj_residual_fX_fgfX(fX: torch.Tensor, fgfX: torch.Tensor, results_fol
     plot_proj_residual_generic(Z1=fX, Z2=fgfX,
                                title="$\mathrm{Resid}(f_{\star}(X), \mathrm{Col}((f_{\star} \circ g_{\star} \circ f_{\star})(X)))$",
                                file=results_folder / "fX_fgfX_proj.jpg")
+
+
+def plot_proj_residual_X_gfX(X: torch.Tensor, gfX: torch.Tensor, results_folder: pathlib.Path):
+    results_folder.mkdir(parents=True, exist_ok=True)
+    plot_proj_residual_generic(Z1=X, Z2=gfX,
+                               title="$\mathrm{Resid}(X, \mathrm{Col}((g_{\star} \circ f_{\star})(X)))$",
+                               file=results_folder / "X_gfX_proj.jpg")
