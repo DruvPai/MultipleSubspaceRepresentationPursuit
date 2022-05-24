@@ -42,6 +42,8 @@ def supervised_experiment(model: pl.LightningModule, data: pl.LightningDataModul
         plot_class_proj_residual_fX_fgfX(fX, fgfX, y, k, result_dir)
         plot_cosine_similarity_X(X, result_dir)
         plot_cosine_similarity_fX(fX, result_dir)
+        plot_cosine_similarity_gfX(gfX, result_dir)
+        plot_cosine_similarity_fgfX(gfX, result_dir)
         plot_E_C(model, result_dir)
 
     elif isinstance(model, SupervisedGAN):
