@@ -28,27 +28,19 @@ def reproduce_fig_8():
     # Question: what happens when S dimension is larger?
     # Answer: nothing significant changes, default performance
     ctrl_ssp_experiment(
-        n=500, d_x=50, d_z=40, d_S=20, sigma_sq=0.0, eps_sq=1.0
-    )
-
-
-def reproduce_fig_9():
-    # Question: what happens when S dimension is larger?
-    # Answer: nothing significant changes, default performance
-    ctrl_ssp_experiment(
         n=500, d_x=50, d_z=40, d_S=40, sigma_sq=0.0, eps_sq=1.0
     )
 
 
-def reproduce_fig_10():
+def reproduce_fig_9():
     # Question: what happens with noise?
     # Answer: performance maintains or decays gracefully
     ctrl_ssp_experiment(
-        n=500, d_x=50, d_z=40, d_S=10, sigma_sq=0.01, eps_sq=1.0
+        n=500, d_x=50, d_z=40, d_S=10, sigma_sq=0.1, eps_sq=1.0
     )
 
 
-def reproduce_fig_11():
+def reproduce_fig_10():
     # Question: what happens with noise and reduced epsilon?
     # Answer: performance maintains or decays gracefully
     ctrl_ssp_experiment(
@@ -62,24 +54,7 @@ def reproduce_fig_11():
     )
 
 
-def reproduce_fig_12():
-    # Question: what happens with increased noise?
-    # Answer: performance maintains or decays gracefully
-    ctrl_ssp_experiment(
-        n=500, d_x=50, d_z=40, d_S=10, sigma_sq=0.025, eps_sq=1.0
-    )
-    ctrl_ssp_experiment(
-        n=500, d_x=50, d_z=40, d_S=10, sigma_sq=0.05, eps_sq=1.0
-    )
-    ctrl_ssp_experiment(
-        n=500, d_x=50, d_z=40, d_S=10, sigma_sq=0.075, eps_sq=1.0
-    )
-    ctrl_ssp_experiment(
-        n=500, d_x=50, d_z=40, d_S=10, sigma_sq=0.1, eps_sq=1.0
-    )
-
-
-def reproduce_fig_13():
+def reproduce_fig_11():
     # Question: can we compare to other representation learning methods?
     # Answer: we do much better at recovering subspaces.
     ctrl_ssp_experiment(
@@ -100,5 +75,3 @@ reproduce_fig_8()
 reproduce_fig_9()
 reproduce_fig_10()
 reproduce_fig_11()
-reproduce_fig_12()
-reproduce_fig_13()
