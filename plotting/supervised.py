@@ -95,7 +95,7 @@ def plot_spectra_fgfX(fgfX: torch.Tensor, results_folder: pathlib.Path):
 
 def plot_class_spectra_generic(Z: torch.Tensor, y: torch.Tensor, k: int,
                                title: str, smalltitles: typing.List[str], file: pathlib.Path):
-    plt.rcParams['figure.figsize'] = 8, 8
+    plt.rcParams['figure.figsize'] = 8 * k / 3, 8
 
     plt.suptitle(title, fontsize=EXTRA_LARGE_FONTDICT["fontsize"])
     for j in range(k):
@@ -146,7 +146,7 @@ def plot_class_spectra_fgfX(fgfX: torch.Tensor, y: torch.Tensor, k: int, results
 
 def plot_class_proj_residual_generic(Z1: torch.Tensor, Z2: torch.Tensor, y: torch.Tensor, k: int, title: str,
                                      smalltitles: typing.List[str], file: pathlib.Path):
-    plt.rcParams['figure.figsize'] = 8, 8
+    plt.rcParams['figure.figsize'] = 8 * k / 3, 8
 
     plt.suptitle(title, fontsize=EXTRA_LARGE_FONTDICT["fontsize"])
     for j in range(k):

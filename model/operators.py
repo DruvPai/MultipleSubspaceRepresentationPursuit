@@ -1,6 +1,7 @@
 import cvxpy as cp
 import geoopt
 import torch
+import mcr2.functional as F
 
 
 class LinearUnconstrainedEncoder(torch.nn.Module):
@@ -78,8 +79,37 @@ class LinearSampleNormConstrainedEncoder(torch.nn.Module):
         constraints = []
         for i in range(Pi.shape[1]):
             Xi = X[Pi[:, i] == 1].detach().numpy()
-            constraints.append(cp.norm(pi_F @ Xi.T, 'fro') ** 2 <= Xi.shape[0])
+            if Xi.shape[0] > 0:
+                constraints.append(cp.norm(pi_F @ Xi.T, 'fro') ** 2 <= Xi.shape[0])
         objective = cp.Minimize(cp.norm(pi_F - F, 'fro'))
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.SCS)
         self.matrix.data = torch.tensor(pi_F.value, dtype=F.dtype)
+
+
+class FCNNEncoder(torch.nn.Module):
+    def __init__(self, d_x, d_z, d_latent, n_layers, lr=1e-3):
+        super(FCNNEncoder, self).__init__()
+        layers = [torch.nn.Linear(d_x, d_latent), torch.nn.ReLU()]
+        for _ in range(n_layers - 2):
+            layers.extend([torch.nn.Linear(d_latent, d_latent), torch.nn.ReLU()])
+        layers.append(torch.nn.Linear(d_latent, d_z))
+        self.net = torch.nn.Sequential(*layers)
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=lr)
+
+    def forward(self, X):
+        return self.net(X)
+
+
+class FCNNDecoder(torch.nn.Module):
+    def __init__(self, d_x, d_z, d_latent, n_layers, lr=1e-3):
+        super(FCNNDecoder, self).__init__()
+        layers = [torch.nn.Linear(d_z, d_latent), torch.nn.ReLU()]
+        for _ in range(n_layers - 2):
+            layers.extend([torch.nn.Linear(d_latent, d_latent), torch.nn.ReLU()])
+        layers.append(torch.nn.Linear(d_latent, d_x))
+        self.net = torch.nn.Sequential(*layers)
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=lr)
+
+    def forward(self, Z):
+        return self.net(Z)

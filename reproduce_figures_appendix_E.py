@@ -153,6 +153,18 @@ def reproduce_fig_21():
     )
 
 
+def reproduce_fig_22_23():
+    # Question: what happens when we test the linear model on real data?
+    # Answer: it does all right but the data lies on nonlinear manifolds which cannot be linearized by linear maps
+    ctrl_msp_mnist_experiment(d_z=150, eps_sq=1.0, batch_size=100, epochs=1)
+
+
+def reproduce_fig_24_25():
+    # Question: what happens when we replace the linear maps with shallow 2 layer NNs in the style of CTRL-SG?
+    # Answer: it does much better than the linear model on nonlinear data.
+    ctrl_msp_fcnn_mnist_experiment(d_z=150, d_latent=150, n_layers=2, eps_sq=1.0, batch_size=100, epochs=3)
+
+
 reproduce_fig_14()
 reproduce_fig_15()
 reproduce_fig_16()
@@ -161,3 +173,5 @@ reproduce_fig_18()
 reproduce_fig_19()
 reproduce_fig_20()
 reproduce_fig_21()
+reproduce_fig_22_23()
+reproduce_fig_24_25()

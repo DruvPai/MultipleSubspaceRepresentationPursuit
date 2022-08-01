@@ -1,10 +1,12 @@
 from data.multiple_subspaces import *
+from data.mnist import *
 from model.comparisons.gan import *
 from model.comparisons.vae import *
 from model.ctrl_msp import *
 from plotting.comparison import *
 from plotting.ctrl_sg import *
 from plotting.supervised import *
+
 
 SUPERVISED_EXPERIMENT_DIR = pathlib.Path("experiments") / "supervised"
 
@@ -111,4 +113,19 @@ def cvae_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: typing
     data = MultipleSubspacesDataModule(n, k, d_x, d_S, nu, sigma_sq, outlier_pct, outlier_mag, label_corruption_pct,
                                        batch_size)
     model = SupervisedCVAE(k, d_x, d_z, d_latent, n_layers, lr)
+    supervised_experiment(model, data, epochs)
+
+def ctrl_msp_mnist_experiment(d_z: int, eps_sq: float = 1.0, lr_f: float = 1e-2, lr_g: float = 1e-3,
+                              inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 1):
+    pl.utilities.seed.reset_seed()
+    data = MNISTDataModule(data_dir="./datasets/", val_split=0.0, normalize=False, flatten=True, batch_size=batch_size)
+    model = CTRLMSP(data.unrolled_dim, d_z, eps_sq, lr_f, lr_g, inner_opt_steps)
+    supervised_experiment(model, data, epochs)
+
+def ctrl_msp_fcnn_mnist_experiment(d_z: int, d_latent: int, n_layers: int, eps_sq: float = 1.0,
+                             lr_f: float = 1e-2, lr_g: float = 1e-3,
+                             inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 1):
+    pl.utilities.seed.reset_seed()
+    data = MNISTDataModule(data_dir="./datasets/", val_split=0.0, normalize=False, flatten=True, batch_size=batch_size)
+    model = CTRLMSPFCNN(data.unrolled_dim, d_z,  d_latent, n_layers, eps_sq, lr_f, lr_g, inner_opt_steps)
     supervised_experiment(model, data, epochs)

@@ -40,6 +40,13 @@ class SupervisedCTRLSG(pl.LightningModule):
     def u_dec(self, Z, Z_hat, Pi):
         return self.C(Z, Z_hat, Pi)
 
+    def configure_optimizers(self):
+        F_opt = self.F.optimizer
+        G_opt = self.G.optimizer
+        return F_opt, G_opt
+
+
+class SupervisedCTRLSGProjection(SupervisedCTRLSG):
     def training_step(self, batch, batch_idx):
         F_opt, G_opt = self.optimizers()
 
@@ -72,13 +79,47 @@ class SupervisedCTRLSG(pl.LightningModule):
         self.training_C.append(Cfg.detach().numpy())
         self.log_dict({"E(f)": Ef, "C(f, g)": Cfg}, prog_bar=True)
 
-    def configure_optimizers(self):
-        F_opt = self.F.optimizer
-        G_opt = self.G.optimizer
-        return F_opt, G_opt
+
+class SupervisedCTRLSGLagrangian(SupervisedCTRLSG):
+    def __init__(self,
+                 F: torch.nn.Module, G: torch.nn.Module,
+                 E: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
+                 C: typing.Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor],
+                 P: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
+                 inner_opt_steps: int = 1000):
+        super(SupervisedCTRLSGLagrangian, self).__init__(F, G, E, C, inner_opt_steps)
+        self.P = P
+
+    def training_step(self, batch, batch_idx):
+        F_opt, G_opt = self.optimizers()
+
+        X, y = batch
+        Pi = mcr2.functional.y_to_pi(y)
+
+        # Optimize
+        loss_F = -self.u_enc(self.f(X), self.fgf(X), Pi) + self.P(self.f(X), Pi)
+        F_opt.zero_grad()
+        self.manual_backward(loss_F)
+        F_opt.step()
+
+        for i in range(self.inner_opt_steps):
+            loss_G = -self.u_dec(self.f(X), self.fgf(X), Pi)
+            G_opt.zero_grad()
+            self.manual_backward(loss_G)
+            G_opt.step()
+
+        # Log
+        Z = self.f(X)
+        Z_hat = self.fgf(X)
+        Ef = self.E(Z, Pi)
+        Cfg = self.C(Z, Z_hat, Pi)
+
+        self.training_E.append(Ef.detach().numpy())
+        self.training_C.append(Cfg.detach().numpy())
+        self.log_dict({"E(f)": Ef, "C(f, g)": Cfg}, prog_bar=True)
 
 
-class CTRLMSP(SupervisedCTRLSG):
+class CTRLMSP(SupervisedCTRLSGProjection):
     def __init__(self, d_x: int, d_z: int, eps_sq: float = 1.0,
                  lr_f: float = 1e-2, lr_g: float = 1e-3, inner_opt_steps: int = 1000):
         cr = mcr2.coding_rate.SupervisedVectorCodingRate(eps_sq)
@@ -96,3 +137,27 @@ class CTRLMSP(SupervisedCTRLSG):
         self.training_DeltaR_distance = [-self.training_C[i] for i in range(len(self.training_C))]
 
         self.name: str = f"CTRLMSP_dx{d_x}_dz{d_z}_es{eps_sq}_lrf{lr_f}_lrg{lr_g}_in{inner_opt_steps}"
+
+
+class CTRLMSPFCNN(SupervisedCTRLSGLagrangian):
+    def __init__(self, d_x: int, d_z: int, d_latent: int, n_layers: int,
+                 eps_sq: float = 1.0, lmbda: float = 1e7, lr_f: float = 1e-2, lr_g: float = 1e-3,
+                 inner_opt_steps: int = 100):
+        cr = mcr2.coding_rate.SupervisedVectorCodingRate(eps_sq)
+        super(CTRLMSPFCNN, self).__init__(
+            F=FCNNEncoder(d_x, d_z, d_latent, n_layers, lr_f),
+            G=FCNNDecoder(d_x, d_z, d_latent, n_layers, lr_f),
+            E=lambda Z, Pi: cr.DeltaR(Z, Pi),
+            C=lambda Z1, Z2, Pi: -sum(
+                cr.DeltaR_distance(Z1[Pi[:, j] == 1], Z2[Pi[:, j] == 1])
+                for j in range(Pi.shape[1])
+            ),
+            P=lambda Z, Pi: lmbda * sum(max(
+                torch.tensor(0.0), (torch.linalg.norm(Z[Pi[:, j]]) ** 2) - torch.sum(Pi[:, j]))
+                                        for j in range(Pi.shape[1])),
+            inner_opt_steps=inner_opt_steps
+        )
+        self.training_DeltaR = self.training_E
+        self.training_DeltaR_distance = [-self.training_C[i] for i in range(len(self.training_C))]
+
+        self.name: str = f"CTRLMSPFCNN_dx{d_x}_dz{d_z}_dl{d_latent}_nl{n_layers}_es{eps_sq}_lmbda{lmbda}_lrf{lr_f}_lrg{lr_g}_in{inner_opt_steps}"
