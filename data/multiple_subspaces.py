@@ -52,7 +52,7 @@ class MultipleSubspacesDataModule(pl.LightningDataModule):
             subset_columns = torch.multinomial(input=torch.ones(max_d_S), num_samples=self.d_S[j],
                                                replacement=False)  # (d_S_i, )
             Uj = U[:, subset_columns]  # (d_x, d_S_i)
-            Ujp = (torch.eye(n=self.d_x) + self.nu * torch.randn(size=(self.d_x, self.d_x))) @ Uj  # (d_x, d_S_i)
+            Ujp = (1 - self.nu) * Uj + self.nu * torch.randn_like(Uj)  # (d_x, d_S_i)
             Ujp = Ujp / torch.linalg.norm(Ujp, dim=0)  # (d_x, d_S_i)
             Ujs.append(Ujp)
 

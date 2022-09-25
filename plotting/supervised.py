@@ -28,7 +28,7 @@ def plot_cosine_similarity_X(X: torch.Tensor, results_folder: pathlib.Path):
     results_folder.mkdir(parents=True, exist_ok=True)
     plot_cosine_similarity_generic(
         Z=X,
-        title="$\cos(\\angle(x^i, x^j))$",
+        title="$acs(x^i, x^j)$",
         file=results_folder / "X_heatmap.jpg"
     )
 
@@ -37,7 +37,7 @@ def plot_cosine_similarity_fX(fX: torch.Tensor, results_folder: pathlib.Path):
     results_folder.mkdir(parents=True, exist_ok=True)
     plot_cosine_similarity_generic(
         Z=fX,
-        title="$\cos(\\angle(f_{\star}(x^i), f_{\star}(x^j)))$",
+        title="$acs(f_{\star}(x^{i}), f_{\star}(x^{j}))$",
         file=results_folder / "fX_heatmap.jpg"
     )
 
@@ -46,7 +46,7 @@ def plot_cosine_similarity_gfX(gfX: torch.Tensor, results_folder: pathlib.Path):
     results_folder.mkdir(parents=True, exist_ok=True)
     plot_cosine_similarity_generic(
         Z=gfX,
-        title="$\cos(\\angle((g_{\star} \circ f_{\star})(x^i), (g_{\star} \circ f_{\star})(x^j))$",
+        title="$acs((g_{\star} \circ f_{\star})(x^{i}), (g_{\star} \circ f_{\star})(x^{j}))$",
         file=results_folder / "gfX_heatmap.jpg"
     )
 
@@ -55,7 +55,7 @@ def plot_cosine_similarity_fgfX(fgfX: torch.Tensor, results_folder: pathlib.Path
     results_folder.mkdir(parents=True, exist_ok=True)
     plot_cosine_similarity_generic(
         Z=fgfX,
-        title="$\cos(\\angle((f_{\star} \circ g_{\star} \circ f_{\star})(x^i), (f_{\star} \circ g_{\star} \circ f_{\star})(x^j))$",
+        title="$acs((f_{\star} \circ g_{\star} \circ f_{\star})(x^{i}), (f_{\star} \circ g_{\star} \circ f_{\star})(x^{j}))$",
         file=results_folder / "fgfX_heatmap.jpg"
     )
 
@@ -167,7 +167,7 @@ def plot_class_proj_residual_X_gfX(X: torch.Tensor, gfX: torch.Tensor, y: torch.
                                    results_folder: pathlib.Path):
     results_folder.mkdir(parents=True, exist_ok=True)
     plot_class_proj_residual_generic(Z1=X, Z2=gfX, y=y, k=k,
-                                     title="$\mathrm{Resid}(X_{j}, \mathrm{Col}((g_{\star} \circ f_{\star})(X_{j})))$",
+                                     title="$resid_{j}(X_{j})$",
                                      smalltitles=[f"$j = {j + 1}$" for j in range(k)],
                                      file=results_folder / "X_gfX_class_proj.jpg"
                                      )
@@ -177,7 +177,7 @@ def plot_class_proj_residual_fX_fgfX(fX: torch.Tensor, fgfX: torch.Tensor, y: to
                                      results_folder: pathlib.Path):
     results_folder.mkdir(parents=True, exist_ok=True)
     plot_class_proj_residual_generic(Z1=fX, Z2=fgfX, y=y, k=k,
-                                     title="$\mathrm{Resid}(f_{\star}(X_{j}), \mathrm{Col}((f_{\star} \circ g_{\star} \circ f_{\star})(X_{j})))$",
+                                     title="$resid_{j}(f_{\star}(X_{j}))$",
                                      smalltitles=[f"$j = {j + 1}$" for j in range(k)],
                                      file=results_folder / "fX_fgfX_class_proj.jpg"
                                      )

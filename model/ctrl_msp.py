@@ -9,18 +9,18 @@ from model.operators import *
 class SupervisedCTRLSG(pl.LightningModule):
     def __init__(self,
                  F: torch.nn.Module, G: torch.nn.Module,
-                 E: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
+                 Q: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
                  C: typing.Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor],
                  inner_opt_steps: int = 1000):
         super(SupervisedCTRLSG, self).__init__()
         self.F: torch.nn.Module = F
         self.G: torch.nn.Module = G
-        self.E: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = E
+        self.Q: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor] = Q
         self.C: typing.Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor] = C
 
         self.inner_opt_steps: int = inner_opt_steps
 
-        self.training_E = []
+        self.training_Q = []
         self.training_C = []
 
         self.automatic_optimization = False
@@ -35,7 +35,7 @@ class SupervisedCTRLSG(pl.LightningModule):
         return self.F(self.G(self.F(X)))
 
     def u_enc(self, Z, Z_hat, Pi):
-        return self.E(Z, Pi) - self.C(Z, Z_hat, Pi)
+        return self.Q(Z, Pi) - self.C(Z, Z_hat, Pi)
 
     def u_dec(self, Z, Z_hat, Pi):
         return self.C(Z, Z_hat, Pi)
@@ -72,22 +72,22 @@ class SupervisedCTRLSGProjection(SupervisedCTRLSG):
         # Log
         Z = self.f(X)
         Z_hat = self.fgf(X)
-        Ef = self.E(Z, Pi)
+        Qf = self.Q(Z, Pi)
         Cfg = self.C(Z, Z_hat, Pi)
 
-        self.training_E.append(Ef.detach().numpy())
+        self.training_Q.append(Qf.detach().numpy())
         self.training_C.append(Cfg.detach().numpy())
-        self.log_dict({"E(f)": Ef, "C(f, g)": Cfg}, prog_bar=True)
+        self.log_dict({"Q(f)": Qf, "C(f, g)": Cfg}, prog_bar=True)
 
 
 class SupervisedCTRLSGLagrangian(SupervisedCTRLSG):
     def __init__(self,
                  F: torch.nn.Module, G: torch.nn.Module,
-                 E: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
+                 Q: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
                  C: typing.Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor],
                  P: typing.Callable[[torch.Tensor, torch.Tensor], torch.Tensor],
                  inner_opt_steps: int = 1000):
-        super(SupervisedCTRLSGLagrangian, self).__init__(F, G, E, C, inner_opt_steps)
+        super(SupervisedCTRLSGLagrangian, self).__init__(F, G, Q, C, inner_opt_steps)
         self.P = P
 
     def training_step(self, batch, batch_idx):
@@ -111,12 +111,12 @@ class SupervisedCTRLSGLagrangian(SupervisedCTRLSG):
         # Log
         Z = self.f(X)
         Z_hat = self.fgf(X)
-        Ef = self.E(Z, Pi)
+        Qf = self.Q(Z, Pi)
         Cfg = self.C(Z, Z_hat, Pi)
 
-        self.training_E.append(Ef.detach().numpy())
+        self.training_Q.append(Qf.detach().numpy())
         self.training_C.append(Cfg.detach().numpy())
-        self.log_dict({"E(f)": Ef, "C(f, g)": Cfg}, prog_bar=True)
+        self.log_dict({"Q(f)": Qf, "C(f, g)": Cfg}, prog_bar=True)
 
 
 class CTRLMSP(SupervisedCTRLSGProjection):
@@ -126,14 +126,14 @@ class CTRLMSP(SupervisedCTRLSGProjection):
         super(CTRLMSP, self).__init__(
             F=LinearSampleNormConstrainedEncoder(d_x, d_z, lr_f),
             G=LinearUnconstrainedDecoder(d_x, d_z, lr_g),
-            E=lambda Z, Pi: cr.DeltaR(Z, Pi),
+            Q=lambda Z, Pi: cr.DeltaR(Z, Pi),
             C=lambda Z1, Z2, Pi: -sum(
                 cr.DeltaR_distance(Z1[Pi[:, j] == 1], Z2[Pi[:, j] == 1])
                 for j in range(Pi.shape[1])
             ),
             inner_opt_steps=inner_opt_steps
         )
-        self.training_DeltaR = self.training_E
+        self.training_DeltaR = self.training_Q
         self.training_DeltaR_distance = [-self.training_C[i] for i in range(len(self.training_C))]
 
         self.name: str = f"CTRLMSP_dx{d_x}_dz{d_z}_es{eps_sq}_lrf{lr_f}_lrg{lr_g}_in{inner_opt_steps}"
@@ -147,7 +147,7 @@ class CTRLMSPFCNN(SupervisedCTRLSGLagrangian):
         super(CTRLMSPFCNN, self).__init__(
             F=FCNNEncoder(d_x, d_z, d_latent, n_layers, lr_f),
             G=FCNNDecoder(d_x, d_z, d_latent, n_layers, lr_f),
-            E=lambda Z, Pi: cr.DeltaR(Z, Pi),
+            Q=lambda Z, Pi: cr.DeltaR(Z, Pi),
             C=lambda Z1, Z2, Pi: -sum(
                 cr.DeltaR_distance(Z1[Pi[:, j] == 1], Z2[Pi[:, j] == 1])
                 for j in range(Pi.shape[1])
@@ -157,7 +157,7 @@ class CTRLMSPFCNN(SupervisedCTRLSGLagrangian):
                                         for j in range(Pi.shape[1])),
             inner_opt_steps=inner_opt_steps
         )
-        self.training_DeltaR = self.training_E
+        self.training_DeltaR = self.training_Q
         self.training_DeltaR_distance = [-self.training_C[i] for i in range(len(self.training_C))]
 
         self.name: str = f"CTRLMSPFCNN_dx{d_x}_dz{d_z}_dl{d_latent}_nl{n_layers}_es{eps_sq}_lmbda{lmbda}_lrf{lr_f}_lrg{lr_g}_in{inner_opt_steps}"

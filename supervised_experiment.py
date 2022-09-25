@@ -46,7 +46,7 @@ def supervised_experiment(model: pl.LightningModule, data: pl.LightningDataModul
         plot_cosine_similarity_fX(fX, result_dir)
         plot_cosine_similarity_gfX(gfX, result_dir)
         plot_cosine_similarity_fgfX(fgfX, result_dir)
-        plot_E_C(model, result_dir)
+        plot_Q_C(model, result_dir)
 
     elif isinstance(model, SupervisedGAN):
         gZ = model.generate_data(X.shape[0], y)
@@ -115,16 +115,18 @@ def cvae_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: typing
     model = SupervisedCVAE(k, d_x, d_z, d_latent, n_layers, lr)
     supervised_experiment(model, data, epochs)
 
+
 def ctrl_msp_mnist_experiment(d_z: int, eps_sq: float = 1.0, lr_f: float = 1e-2, lr_g: float = 1e-3,
-                              inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 1):
+                              inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 2):
     pl.utilities.seed.reset_seed()
     data = MNISTDataModule(data_dir="./datasets/", val_split=0.0, normalize=False, flatten=True, batch_size=batch_size)
     model = CTRLMSP(data.unrolled_dim, d_z, eps_sq, lr_f, lr_g, inner_opt_steps)
     supervised_experiment(model, data, epochs)
 
+
 def ctrl_msp_fcnn_mnist_experiment(d_z: int, d_latent: int, n_layers: int, eps_sq: float = 1.0,
                              lr_f: float = 1e-2, lr_g: float = 1e-3,
-                             inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 1):
+                             inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 2):
     pl.utilities.seed.reset_seed()
     data = MNISTDataModule(data_dir="./datasets/", val_split=0.0, normalize=False, flatten=True, batch_size=batch_size)
     model = CTRLMSPFCNN(data.unrolled_dim, d_z,  d_latent, n_layers, eps_sq, lr_f, lr_g, inner_opt_steps)

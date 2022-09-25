@@ -84,7 +84,8 @@ class LinearSampleNormConstrainedEncoder(torch.nn.Module):
         objective = cp.Minimize(cp.norm(pi_F - F, 'fro'))
         problem = cp.Problem(objective, constraints)
         problem.solve(solver=cp.SCS)
-        self.matrix.data = torch.tensor(pi_F.value, dtype=F.dtype)
+        self.matrix.data.fill_(0.0)
+        self.matrix.data += torch.tensor(pi_F.value, dtype=F.dtype)
 
 
 class FCNNEncoder(torch.nn.Module):
