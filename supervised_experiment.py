@@ -71,53 +71,65 @@ def supervised_experiment(model: pl.LightningModule, data: pl.LightningDataModul
         plot_cosine_similarity_gfX(gfX, result_dir)
 
 
-def ctrl_msp_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: typing.List[int], nu: float = 0.1,
-                        sigma_sq: float = 0.0, eps_sq: float = 1.0,
+def ctrl_msp_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: typing.List[int], alpha: float = 0.1,
+                        nu: float = 0.0, eps_sq: float = 1.0,
                         lr_f: float = 1e-2, lr_g: float = 1e-3, inner_opt_steps: int = 1000,
                         outlier_pct: float = 0.0, outlier_mag: float = 0.0, label_corruption_pct: float = 0.0,
                         batch_size: int = 50, epochs: int = 2):
     pl.utilities.seed.reset_seed()
-    data = MultipleSubspacesDataModule(n, k, d_x, d_S, nu, sigma_sq, outlier_pct, outlier_mag, label_corruption_pct,
+    data = MultipleSubspacesDataModule(n, k, d_x, d_S, alpha, nu, outlier_pct, outlier_mag, label_corruption_pct,
                                        batch_size)
     model = CTRLMSP(d_x, d_z, eps_sq, lr_f, lr_g, inner_opt_steps)
     supervised_experiment(model, data, epochs)
 
 
+def ctrl_msp_fcnn_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_latent: int, n_layers: int,
+                             d_S: typing.List[int], alpha: float = 0.1, nu: float = 0.0, eps_sq: float = 1.0,
+                             lr_f: float = 1e-2, lr_g: float = 1e-3, inner_opt_steps: int = 100,
+                             outlier_pct: float = 0.0, outlier_mag: float = 0.0, label_corruption_pct: float = 0.0,
+                             batch_size: int = 50, epochs: int = 2):
+    pl.utilities.seed.reset_seed()
+    data = MultipleSubspacesDataModule(n, k, d_x, d_S, alpha, nu, outlier_pct, outlier_mag, label_corruption_pct,
+                                       batch_size)
+    model = CTRLMSPFCNN(d_x, d_z, d_latent, n_layers, eps_sq, lr_f, lr_g, inner_opt_steps)
+    supervised_experiment(model, data, epochs)
+
+
 def infogan_experiment(n: typing.List[int], k: int, d_x: int, d_noise: int, d_code: int, d_S: typing.List[int],
-                       nu: float = 0.1, sigma_sq: float = 0.0, d_latent: int = 50, n_layers: int = 5,
+                       alpha: float = 0.1, nu: float = 0.0, d_latent: int = 40, n_layers: int = 2,
                        lr: float = 1e-4, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
                        label_corruption_pct: float = 0.0, batch_size: int = 50, epochs: int = 2):
     pl.utilities.seed.reset_seed()
-    data = MultipleSubspacesDataModule(n, k, d_x, d_S, nu, sigma_sq, outlier_pct, outlier_mag, label_corruption_pct,
+    data = MultipleSubspacesDataModule(n, k, d_x, d_S, alpha, nu, outlier_pct, outlier_mag, label_corruption_pct,
                                        batch_size)
     model = SupervisedInfoGAN(k, d_x, d_noise, d_code, d_latent, n_layers, lr)
     supervised_experiment(model, data, epochs)
 
 
 def cgan_experiment(n: typing.List[int], k: int, d_x: int, d_noise: int, d_S: typing.List[int],
-                    nu: float = 0.1, sigma_sq: float = 0.0, d_latent: int = 50, n_layers: int = 5,
+                    alpha: float = 0.1, nu: float = 0.0, d_latent: int = 40, n_layers: int = 2,
                     lr: float = 1e-4, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
                     label_corruption_pct: float = 0.0, batch_size: int = 50, epochs: int = 2):
     pl.utilities.seed.reset_seed()
-    data = MultipleSubspacesDataModule(n, k, d_x, d_S, nu, sigma_sq, outlier_pct, outlier_mag, label_corruption_pct,
+    data = MultipleSubspacesDataModule(n, k, d_x, d_S, alpha, nu, outlier_pct, outlier_mag, label_corruption_pct,
                                        batch_size)
     model = SupervisedCGAN(k, d_x, d_noise, d_latent, n_layers, lr)
     supervised_experiment(model, data, epochs)
 
 
 def cvae_experiment(n: typing.List[int], k: int, d_x: int, d_z: int, d_S: typing.List[int],
-                    nu: float = 0.1, sigma_sq: float = 0.0, d_latent: int = 50, n_layers: int = 5,
+                    alpha: float = 0.1, nu: float = 0.0, d_latent: int = 40, n_layers: int = 2,
                     lr: float = 1e-4, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
                     label_corruption_pct: float = 0.0, batch_size: int = 50, epochs: int = 2):
     pl.utilities.seed.reset_seed()
-    data = MultipleSubspacesDataModule(n, k, d_x, d_S, nu, sigma_sq, outlier_pct, outlier_mag, label_corruption_pct,
+    data = MultipleSubspacesDataModule(n, k, d_x, d_S, alpha, nu, outlier_pct, outlier_mag, label_corruption_pct,
                                        batch_size)
     model = SupervisedCVAE(k, d_x, d_z, d_latent, n_layers, lr)
     supervised_experiment(model, data, epochs)
 
 
 def ctrl_msp_mnist_experiment(d_z: int, eps_sq: float = 1.0, lr_f: float = 1e-2, lr_g: float = 1e-3,
-                              inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 2):
+                              inner_opt_steps: int = 200, batch_size: int = 200, epochs: int = 1):
     pl.utilities.seed.reset_seed()
     data = MNISTDataModule(data_dir="./datasets/", val_split=0.0, normalize=False, flatten=True, batch_size=batch_size)
     model = CTRLMSP(data.unrolled_dim, d_z, eps_sq, lr_f, lr_g, inner_opt_steps)
@@ -126,7 +138,7 @@ def ctrl_msp_mnist_experiment(d_z: int, eps_sq: float = 1.0, lr_f: float = 1e-2,
 
 def ctrl_msp_fcnn_mnist_experiment(d_z: int, d_latent: int, n_layers: int, eps_sq: float = 1.0,
                              lr_f: float = 1e-2, lr_g: float = 1e-3,
-                             inner_opt_steps: int = 100, batch_size: int = 50, epochs: int = 2):
+                             inner_opt_steps: int = 200, batch_size: int = 200, epochs: int = 1):
     pl.utilities.seed.reset_seed()
     data = MNISTDataModule(data_dir="./datasets/", val_split=0.0, normalize=False, flatten=True, batch_size=batch_size)
     model = CTRLMSPFCNN(data.unrolled_dim, d_z,  d_latent, n_layers, eps_sq, lr_f, lr_g, inner_opt_steps)

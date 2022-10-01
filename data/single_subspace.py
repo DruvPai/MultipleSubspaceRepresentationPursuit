@@ -4,7 +4,7 @@ from data.alterations import *
 
 
 class SingleSubspaceDataModule(pl.LightningDataModule):
-    def __init__(self, n: int, d_x: int, d_S: int, sigma_sq: float = 0.0, outlier_pct: float = 0.0,
+    def __init__(self, n: int, d_x: int, d_S: int, nu: float = 0.0, outlier_pct: float = 0.0,
                  outlier_mag: float = 0.0, batch_size: int = 50):
         super(SingleSubspaceDataModule, self).__init__()
 
@@ -12,13 +12,13 @@ class SingleSubspaceDataModule(pl.LightningDataModule):
         self.d_S: int = d_S
         self.n: int = n
 
-        self.sigma_sq: float = sigma_sq
+        self.nu: float = nu
         self.batch_size: int = batch_size
 
         self.outlier_pct: float = outlier_pct
         self.outlier_mag: float = outlier_mag
 
-        self.name: str = f"singlesub_n{n}_dx{d_x}_dS{d_S}_ss{sigma_sq}_op{outlier_pct}_om{outlier_mag}_bs{batch_size}"
+        self.name: str = f"singlesub_n{n}_dx{d_x}_dS{d_S}_nu{nu}_op{outlier_pct}_om{outlier_mag}_bs{batch_size}"
 
     def setup(self, stage=None):
         self.X_train: torch.Tensor = torch.zeros(size=(self.n, self.d_x))
@@ -30,7 +30,7 @@ class SingleSubspaceDataModule(pl.LightningDataModule):
 
         for X in (self.X_train, self.X_val, self.X_test):
             X[:] = (U @ torch.randn(self.d_S, X.shape[0])).T
-            add_noise(X, self.sigma_sq)
+            add_noise(X, self.nu)
             add_outliers(X, self.outlier_pct, self.outlier_mag)
 
     def train_dataloader(self):

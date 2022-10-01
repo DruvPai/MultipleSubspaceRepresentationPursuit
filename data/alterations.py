@@ -1,9 +1,9 @@
 import torch
 
 
-def add_noise(X: torch.Tensor, sigma_sq: float):
+def add_noise(X: torch.Tensor, nu: float):
     n, d_x = X.shape
-    X[:] += ((sigma_sq / d_x) ** 0.5) * torch.randn(X.shape)
+    X[:] += ((nu / d_x) ** 0.5) * torch.randn(X.shape)
 
 
 def add_outliers(X: torch.Tensor, outlier_pct: float, outlier_mag: float):

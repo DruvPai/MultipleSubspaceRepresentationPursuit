@@ -20,7 +20,7 @@ class UnsupervisedCTRLSG(pl.LightningModule):
 
         self.inner_opt_steps: int = inner_opt_steps
 
-        self.training_E = []
+        self.training_Q = []
         self.training_C = []
 
         self.automatic_optimization = False

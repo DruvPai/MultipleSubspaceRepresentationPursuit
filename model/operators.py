@@ -101,6 +101,9 @@ class FCNNEncoder(torch.nn.Module):
     def forward(self, X):
         return self.net(X)
 
+    def project_parameters(self, X, Pi):
+        pass
+
 
 class FCNNDecoder(torch.nn.Module):
     def __init__(self, d_x, d_z, d_latent, n_layers, lr=1e-3):
@@ -114,3 +117,11 @@ class FCNNDecoder(torch.nn.Module):
 
     def forward(self, Z):
         return self.net(Z)
+
+    def project_parameters(self, X, Pi):
+        pass
+
+
+class FCNNSampleNormConstrainedEncoder(FCNNEncoder):
+    def forward(self, X):
+        return F.normalize_vec(self.net(X))

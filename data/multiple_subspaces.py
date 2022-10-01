@@ -10,8 +10,8 @@ def _remove_spaces(x):
 
 
 class MultipleSubspacesDataModule(pl.LightningDataModule):
-    def __init__(self, n: typing.List[int], k: int, d_x: int, d_S: typing.List[int], nu: float,
-                 sigma_sq: float = 0.0, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
+    def __init__(self, n: typing.List[int], k: int, d_x: int, d_S: typing.List[int], alpha: float,
+                 nu: float = 0.0, outlier_pct: float = 0.0, outlier_mag: float = 0.0,
                  label_corruption_pct: float = 0.0, batch_size: int = 50):
 
         super(MultipleSubspacesDataModule, self).__init__()
@@ -25,15 +25,15 @@ class MultipleSubspacesDataModule(pl.LightningDataModule):
         self.d_S: typing.List[int] = d_S
         self.d_S_tot: int = sum(d_S)
 
+        self.alpha: float = alpha
         self.nu: float = nu
-        self.sigma_sq: float = sigma_sq
         self.batch_size: int = batch_size
 
         self.outlier_pct: float = outlier_pct
         self.outlier_mag: float = outlier_mag
         self.label_corruption_pct: float = label_corruption_pct
 
-        self.name: str = f"multisub_n{_remove_spaces(n)}_k{k}_dx{d_x}_dS{_remove_spaces(d_S)}_nu{nu}_ss{sigma_sq}_op{outlier_pct}_om{outlier_mag}_lcp{label_corruption_pct}_bs{batch_size}"
+        self.name: str = f"multisub_n{_remove_spaces(n)}_k{k}_dx{d_x}_dS{_remove_spaces(d_S)}_a{alpha}_nu{nu}_op{outlier_pct}_om{outlier_mag}_lcp{label_corruption_pct}_bs{batch_size}"
 
     def setup(self, stage=None):
         self.X_train = torch.zeros(size=(self.n_tot, self.d_x))
@@ -52,7 +52,7 @@ class MultipleSubspacesDataModule(pl.LightningDataModule):
             subset_columns = torch.multinomial(input=torch.ones(max_d_S), num_samples=self.d_S[j],
                                                replacement=False)  # (d_S_i, )
             Uj = U[:, subset_columns]  # (d_x, d_S_i)
-            Ujp = (1 - self.nu) * Uj + self.nu * torch.randn_like(Uj)  # (d_x, d_S_i)
+            Ujp = (1 - self.alpha) * Uj + self.alpha * torch.randn_like(Uj)  # (d_x, d_S_i)
             Ujp = Ujp / torch.linalg.norm(Ujp, dim=0)  # (d_x, d_S_i)
             Ujs.append(Ujp)
 
@@ -62,7 +62,7 @@ class MultipleSubspacesDataModule(pl.LightningDataModule):
                 X[num_processed:num_processed + self.n[j]] = (Ujs[j] @ torch.randn(size=(self.d_S[j], self.n[j]))).T
                 y[num_processed:num_processed + self.n[j]] = j
                 num_processed += self.n[j]
-            add_noise(X, self.sigma_sq)
+            add_noise(X, self.nu)
             add_outliers(X, self.outlier_pct, self.outlier_mag)
             add_labelcorruption(y, self.k, self.label_corruption_pct)
 
